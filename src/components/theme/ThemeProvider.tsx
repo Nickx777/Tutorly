@@ -14,20 +14,20 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType>({
     theme: "system",
     resolvedTheme: "dark",
-    setTheme: () => {},
-    toggleTheme: () => {},
+    setTheme: () => { },
+    toggleTheme: () => { },
 });
 
 function getSystemTheme(): "dark" | "light" {
     if (typeof window === "undefined") return "dark";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    return "light";
 }
 
 function getInitialTheme(): Theme {
     if (typeof window === "undefined") return "system";
     const saved = localStorage.getItem("theme") as Theme | null;
     if (saved) return saved;
-    return "system";
+    return "light";
 }
 
 function applyTheme(theme: Theme) {
@@ -48,7 +48,7 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>("system");
+    const [theme, setThemeState] = useState<Theme>("light");
     const [resolvedTheme, setResolvedTheme] = useState<"dark" | "light">("dark");
     const [mounted, setMounted] = useState(false);
 
