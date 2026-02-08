@@ -184,14 +184,16 @@ export async function createTeacherProfile(
 
     const { data: profile, error } = await supabase
         .from("teacher_profiles")
-        .insert({
+        .upsert({
             user_id: userId,
             bio: data.bio || "",
             subjects: data.subjects || [],
             languages: data.languages || [],
             hourly_rate: data.hourly_rate || 0,
-            approved: false,
             ...data,
+            updated_at: new Date().toISOString(),
+        }, {
+            onConflict: 'user_id'
         })
         .select()
         .single();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,31 @@ export default function TeacherOnboarding() {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
+
+    // Load existing profile if available
+    useEffect(() => {
+        async function loadProfile() {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data: profile } = await supabase
+                .from("teacher_profiles")
+                .select("*")
+                .eq("user_id", user.id)
+                .single();
+
+            if (profile) {
+                setFormData({
+                    headline: "", // Not in DB yet
+                    bio: profile.bio || "",
+                    subjects: profile.subjects?.join(", ") || "",
+                    hourly_rate: profile.hourly_rate?.toString() || "30",
+                });
+            }
+        }
+        loadProfile();
+    }, []);
 
     const handleNext = () => setStep(prev => prev + 1);
     const handleBack = () => setStep(prev => prev - 1);
@@ -169,7 +194,7 @@ export default function TeacherOnboarding() {
                 {step === 3 && (
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="hourly_rate">Hourly Rate ($)</Label>
+                            <Label htmlFor="hourly_rate">Hourly Rate (€)</Label>
                             <Input
                                 id="hourly_rate"
                                 name="hourly_rate"

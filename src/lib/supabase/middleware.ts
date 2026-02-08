@@ -61,14 +61,24 @@ export async function updateSession(request: NextRequest) {
     );
 
     if (isAuthRoute && user) {
-        // Fetch role to redirect to correct dashboard
+        // Fetch role and onboarding status
         const { data: userData } = await supabase
             .from('users')
-            .select('role')
+            .select('role, onboarding_completed')
             .eq('id', user.id)
             .single();
 
         const role = userData?.role || 'student'; // Fallback to student
+        const onboardingCompleted = userData?.onboarding_completed;
+
+        // If they are trying to login/register but haven't finished onboarding, send them to onboarding
+        if (!onboardingCompleted) {
+            const target = role === 'teacher' ? '/onboarding/teacher' : '/onboarding/student';
+            const url = request.nextUrl.clone();
+            url.pathname = target;
+            return NextResponse.redirect(url);
+        }
+
         const dashboardMap: Record<string, string> = {
             teacher: '/teacher',
             admin: '/admin',
@@ -82,16 +92,26 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(url);
     }
 
-    // Role-based access control
+    // Role-based access control and Onboarding Check
     if (user && !isAuthRoute) {
         const { data: userData } = await supabase
             .from('users')
-            .select('role')
+            .select('role, onboarding_completed')
             .eq('id', user.id)
             .single();
 
         const role = userData?.role;
+        const onboardingCompleted = userData?.onboarding_completed;
         const path = request.nextUrl.pathname;
+
+        // Force Onboarding Flow
+        // If not completed, and not already on an onboarding page, and not an API route (to preserve functionality)
+        if (!onboardingCompleted && !path.startsWith('/onboarding') && !path.startsWith('/api')) {
+            const target = role === 'teacher' ? '/onboarding/teacher' : '/onboarding/student';
+            const url = request.nextUrl.clone();
+            url.pathname = target;
+            return NextResponse.redirect(url);
+        }
 
         // Role-based access control
         const isTeacherDashboard = path === '/teacher' || path.startsWith('/teacher/');

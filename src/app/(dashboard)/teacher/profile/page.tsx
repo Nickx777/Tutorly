@@ -531,7 +531,7 @@ export default function TeacherProfile() {
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                 <div>
                                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                                                        Base Hourly Rate ($)
+                                                        Base Hourly Rate (€)
                                                     </label>
                                                     <Input
                                                         type="number"
@@ -542,7 +542,7 @@ export default function TeacherProfile() {
                                                 </div>
                                                 <div>
                                                     <label className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2 block">
-                                                        Group Session Rate ($)
+                                                        Group Session Rate (€)
                                                     </label>
                                                     <Input
                                                         type="number"
@@ -560,12 +560,12 @@ export default function TeacherProfile() {
                                             <div className="flex flex-wrap gap-8">
                                                 <div>
                                                     <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Base Rate</p>
-                                                    <p className="text-3xl font-bold text-slate-900 dark:text-white">${formData.hourly_rate}<span className="text-sm font-normal text-slate-500 ml-1">/ hr</span></p>
+                                                    <p className="text-3xl font-bold text-slate-900 dark:text-white">€{formData.hourly_rate}<span className="text-sm font-normal text-slate-500 ml-1">/ hr</span></p>
                                                 </div>
                                                 {formData.group_rate && (
                                                     <div>
                                                         <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-1">Group Rate</p>
-                                                        <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">${formData.group_rate}<span className="text-sm font-normal text-slate-500 ml-1">/ hr</span></p>
+                                                        <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">€{formData.group_rate}<span className="text-sm font-normal text-slate-500 ml-1">/ hr</span></p>
                                                     </div>
                                                 )}
                                             </div>
@@ -618,7 +618,7 @@ export default function TeacherProfile() {
                                                                         />
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Total Price ($)</label>
+                                                                        <label className="text-[10px] uppercase font-bold text-slate-500 mb-1 block">Total Price (€)</label>
                                                                         <Input
                                                                             type="number"
                                                                             value={pkg.price}
@@ -649,8 +649,8 @@ export default function TeacherProfile() {
                                                                     <p className="text-sm text-slate-500">{pkg.lesson_count} lessons • {pkg.description || "No description"}</p>
                                                                 </div>
                                                                 <div className="text-right">
-                                                                    <p className="text-lg font-bold text-emerald-600">${pkg.price}</p>
-                                                                    <p className="text-[10px] text-slate-400 font-medium">${(pkg.price / pkg.lesson_count).toFixed(2)} / lesson</p>
+                                                                    <p className="text-lg font-bold text-emerald-600">€{pkg.price}</p>
+                                                                    <p className="text-[10px] text-slate-400 font-medium">€{(pkg.price / pkg.lesson_count).toFixed(2)} / lesson</p>
                                                                 </div>
                                                             </div>
                                                         )}
