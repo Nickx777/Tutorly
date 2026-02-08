@@ -32,7 +32,7 @@ export function Navbar() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [user, setUser] = useState<Session["user"] | null>(null);
     const [userRole, setUserRole] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
     const supabase = createClient();
 
