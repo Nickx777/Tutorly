@@ -72,14 +72,14 @@ export async function GET(request: NextRequest) {
                 const role = roleParam || user.user_metadata.role || 'student';
                 targetRole = role;
 
-                const { error: insertError } = await supabaseAdmin.from('users').insert({
+                const { error: insertError } = await supabaseAdmin.from('users').upsert({
                     id: user.id,
                     email: user.email,
                     full_name: full_name,
                     role: role,
                     google_refresh_token: refreshToken || null,
                     onboarding_completed: false
-                });
+                }, { onConflict: 'id' });
 
                 if (insertError) {
                     console.error("Error creating user record:", insertError);
@@ -87,10 +87,10 @@ export async function GET(request: NextRequest) {
 
                 // If teacher, create profile
                 if (role === 'teacher') {
-                    await supabaseAdmin.from('teacher_profiles').insert({
+                    await supabaseAdmin.from('teacher_profiles').upsert({
                         user_id: user.id,
                         approved: false
-                    });
+                    }, { onConflict: 'user_id' });
                 }
             } else if (refreshToken || roleParam) {
                 console.log("Updating existing user...");

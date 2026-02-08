@@ -176,24 +176,24 @@ function RegisterForm() {
     const completeRegistration = async (userId: string, data: RegisterInput) => {
         const supabase = createClient();
 
-        const { error: userError } = await supabase.from("users").insert({
+        const { error: userError } = await supabase.from("users").upsert({
             id: userId,
             email: data.email,
             full_name: data.fullName,
             role: data.role,
-        });
+        }, { onConflict: 'id' });
 
         if (userError) {
-            console.error("Error creating user:", userError);
+            console.error("Error creating/updating user:", userError);
             setError("Failed to create profile. Please try again.");
             return;
         }
 
         if (data.role === "teacher") {
-            await supabase.from("teacher_profiles").insert({
+            await supabase.from("teacher_profiles").upsert({
                 user_id: userId,
                 approved: false,
-            });
+            }, { onConflict: 'user_id' });
         }
 
         router.push(data.role === "teacher" ? "/teacher" : "/student");
@@ -219,7 +219,7 @@ function RegisterForm() {
                         </div>
 
                         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Verify your email</h1>
-                        <p className="text-slate-600 dark:text-slate-300 mb-6">
+                        <p className="text-slate-600 dark:text-slate-300 mb-6" suppressHydrationWarning>
                             We&apos;ve sent a verification link to<br />
                             <strong className="text-slate-900 dark:text-white">{pendingEmail}</strong>
                         </p>

@@ -273,7 +273,10 @@ export default function AdminUsersPage() {
                                         {filteredUsers.map((user) => {
                                             const teacherProfile = user.teacher_profile?.[0];
                                             const isApproved = teacherProfile?.approved;
-                                            const isPendingTeacher = user.role === "teacher" && teacherProfile && !isApproved;
+                                            const isTeacher = user.role === "teacher";
+                                            const hasProfile = !!teacherProfile;
+                                            const isPendingApproval = isTeacher && hasProfile && !isApproved;
+                                            const isMissingProfile = isTeacher && !hasProfile;
 
                                             return (
                                                 <tr
@@ -327,9 +330,13 @@ export default function AdminUsersPage() {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                        ) : isPendingTeacher ? (
+                                                        ) : isPendingApproval ? (
                                                             <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                                                                 Pending Approval
+                                                            </Badge>
+                                                        ) : isMissingProfile ? (
+                                                            <Badge variant="secondary" className="bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                                                No Profile
                                                             </Badge>
                                                         ) : (
                                                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
@@ -342,7 +349,7 @@ export default function AdminUsersPage() {
                                                     </td>
                                                     <td className="p-4">
                                                         <div className="flex justify-end gap-2">
-                                                            {isPendingTeacher && (
+                                                            {isPendingApproval && (
                                                                 <Button
                                                                     size="sm"
                                                                     className="bg-emerald-600 text-white hover:bg-emerald-700"

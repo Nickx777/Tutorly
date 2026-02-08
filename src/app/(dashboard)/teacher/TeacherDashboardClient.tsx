@@ -259,19 +259,21 @@ export default function TeacherDashboardClient({
                             <div className="flex items-center gap-2">
                                 <AlertCircle className="h-5 w-5 text-amber-500" />
                                 <h2 className="text-xl font-bold text-slate-900 dark:text-white">
-                                    Complete your setup
+                                    {profileComplete ? "Profile Under Review" : "Complete your setup"}
                                 </h2>
                                 <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border-0">
-                                    Required
+                                    {profileComplete ? "Pending Approval" : "Required"}
                                 </Badge>
                             </div>
                             <p className="text-slate-600 dark:text-slate-400">
-                                Students can only find and book you once your profile is complete and approved.
+                                {profileComplete
+                                    ? "Your profile is being reviewed by our team. This usually takes 24-48 hours."
+                                    : "Students can only find and book you once your profile is complete and approved."}
                             </p>
                         </div>
                         <Button asChild className="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white shadow-lg shadow-amber-500/25">
                             <Link href="/teacher/profile">
-                                Complete Profile
+                                {profileComplete ? "Edit Profile" : "Complete Profile"}
                             </Link>
                         </Button>
                     </div>
@@ -308,7 +310,7 @@ export default function TeacherDashboardClient({
                             <div className="text-sm">
                                 <p className="font-medium text-slate-900 dark:text-white">Admin Approval</p>
                                 <p className="text-slate-500">
-                                    {isApproved ? 'Approved!' : 'Pending review'}
+                                    {isApproved ? 'Approved!' : 'Waiting for admin review'}
                                 </p>
                             </div>
                         </div>
