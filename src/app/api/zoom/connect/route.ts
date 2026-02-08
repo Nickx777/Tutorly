@@ -26,6 +26,14 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(authUrl);
     } catch (error: any) {
         console.error("Zoom connect error:", error);
+        const message = error.message || "Unknown error";
+
+        if (message.includes("ZOOM_CLIENT_ID") || message.includes("ZOOM_REDIRECT_URI")) {
+            return NextResponse.redirect(
+                new URL("/teacher/settings?error=missing_zoom_config", request.url)
+            );
+        }
+
         return NextResponse.redirect(
             new URL("/teacher/settings?error=zoom_connect_failed", request.url)
         );

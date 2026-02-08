@@ -65,6 +65,8 @@ export default function TeacherSettingsClient({
             if (error === 'invalid_state') message = "Security verification failed. Please try again.";
             if (error === 'unauthorized') message = "You are not authorized to perform this action.";
             if (error === 'storage_failed') message = "Failed to save connection details.";
+            if (error === 'missing_zoom_config') message = "Zoom configuration is missing in Vercel. Please add ZOOM_CLIENT_ID and ZOOM_CLIENT_SECRET.";
+            if (error === 'zoom_connect_failed') message = "Failed to initiate Zoom connection. Check server logs.";
 
             toast.error(message);
 

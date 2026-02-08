@@ -34,10 +34,18 @@ interface ZoomMeeting {
  */
 export function getZoomAuthUrl(state?: string): string {
     const clientId = process.env.ZOOM_CLIENT_ID;
-    const redirectUri = process.env.ZOOM_REDIRECT_URI || `${process.env.NEXT_PUBLIC_APP_URL}/api/zoom/callback`;
+    // Determine base URL: specific env var -> app url -> vercel url -> localhost
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
+    const redirectUri = process.env.ZOOM_REDIRECT_URI || `${appUrl}/api/zoom/callback`;
 
     if (!clientId) {
+        console.error("ZOOM_CLIENT_ID is missing");
         throw new Error("ZOOM_CLIENT_ID environment variable is not set");
+    }
+
+    if (!redirectUri || redirectUri.includes("undefined")) {
+        console.error("Invalid ZOOM_REDIRECT_URI generated:", redirectUri);
+        throw new Error("ZOOM_REDIRECT_URI could not be determined. Set NEXT_PUBLIC_APP_URL.");
     }
 
     const params = new URLSearchParams({
