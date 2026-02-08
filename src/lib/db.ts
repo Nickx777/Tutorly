@@ -312,8 +312,8 @@ export async function createBooking(data: CreateBookingData) {
     return booking;
 }
 
-export async function getLessonsForTeacher(teacherId: string) {
-    const supabase = createClient();
+export async function getLessonsForTeacher(teacherId: string, supabaseClient?: SupabaseClient) {
+    const supabase = supabaseClient || createClient();
 
     // Fetch lessons without joins to avoid FK name issues
     const { data: lessons, error } = await supabase
@@ -340,8 +340,8 @@ export async function getLessonsForTeacher(teacherId: string) {
     }));
 }
 
-export async function getLessonsForStudent(studentId: string) {
-    const supabase = createClient();
+export async function getLessonsForStudent(studentId: string, supabaseClient?: SupabaseClient) {
+    const supabase = supabaseClient || createClient();
 
     // Fetch lessons without joins to avoid FK name issues
     const { data: lessons, error } = await supabase
