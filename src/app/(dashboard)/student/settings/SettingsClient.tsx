@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button, Input, Card, CardHeader, CardContent, CardTitle, Label, Avatar, Tabs, TabsContent, TabsList, TabsTrigger, Switch, Badge } from "@/components/ui";
-import { Save, Loader2, User, Mail, Camera, Calendar, Copy, Check, RefreshCw, Bell, CreditCard } from "lucide-react";
+import { Save, Loader2, User, Mail, Camera, Calendar, Copy, Check, RefreshCw, Bell, CreditCard, GraduationCap } from "lucide-react";
 import { motion } from "framer-motion";
 import { ImageCropModal } from "@/components/dashboard/ImageCropModal";
 import { PageTransition } from "@/components/ui/PageTransition";
@@ -171,6 +171,10 @@ export default function SettingsClient({ initialUser, isGoogleConnected = false 
                         <TabsTrigger value="payment" className="text-slate-600 dark:text-slate-400 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white">
                             <CreditCard className="h-4 w-4 mr-2" />
                             Payment
+                        </TabsTrigger>
+                        <TabsTrigger value="preferences" className="text-slate-600 dark:text-slate-400 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-slate-900 dark:data-[state=active]:text-white">
+                            <GraduationCap className="h-4 w-4 mr-2" />
+                            Learning
                         </TabsTrigger>
                     </TabsList>
 
@@ -389,6 +393,11 @@ export default function SettingsClient({ initialUser, isGoogleConnected = false 
                             </Card>
                         </motion.div>
                     </TabsContent>
+
+                    {/* Learning Preferences Tab */}
+                    <TabsContent value="preferences">
+                        <LearningPreferences user={user} />
+                    </TabsContent>
                 </Tabs>
 
                 <ImageCropModal
@@ -399,5 +408,116 @@ export default function SettingsClient({ initialUser, isGoogleConnected = false 
                 />
             </div>
         </PageTransition>
+    );
+}
+
+function LearningPreferences({ user }: { user: any }) {
+    const [gradeLevel, setGradeLevel] = useState<string>("");
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const supabase = createClient();
+
+    const GRADES = [
+        "Elementary School",
+        "Middle School (6-8)",
+        "High School - Freshman (9th)",
+        "High School - Sophomore (10th)",
+        "High School - Junior (11th)",
+        "High School - Senior (12th)",
+        "University / College",
+        "Adult Learner",
+    ];
+
+    // Load student profile
+    useState(() => {
+        async function loadProfile() {
+            try {
+                const { getStudentProfile } = await import("@/lib/db");
+                const profile = await getStudentProfile(user.id);
+                if (profile?.grade_level) {
+                    setGradeLevel(profile.grade_level);
+                }
+            } catch (error) {
+                console.error("Error loading student profile:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        loadProfile();
+    });
+
+    const handleSave = async () => {
+        setSaving(true);
+        try {
+            const { upsertStudentProfile } = await import("@/lib/db");
+            await upsertStudentProfile(user.id, {
+                grade_level: gradeLevel
+            });
+
+            // Allow update of user metadata for consistency if needed
+            await supabase.auth.updateUser({
+                data: { grade_level: gradeLevel }
+            });
+
+            alert("Preferences updated!");
+        } catch (error) {
+            console.error("Error saving preferences:", error);
+            alert("Failed to save preferences.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    if (loading) {
+        return <div className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-violet-600" /></div>;
+    }
+
+    return (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
+            <Card className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800">
+                <CardHeader>
+                    <CardTitle className="text-slate-900 dark:text-white flex items-center gap-2">
+                        <GraduationCap className="h-5 w-5 text-violet-500" />
+                        Learning Preferences
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Label className="text-slate-700 dark:text-slate-300">Current Grade Level</Label>
+                        <select
+                            value={gradeLevel}
+                            onChange={(e) => setGradeLevel(e.target.value)}
+                            className="w-full p-2 rounded-lg bg-white border border-slate-300 text-slate-900 dark:bg-slate-950 dark:border-slate-800 dark:text-white"
+                        >
+                            <option value="">Select your grade level...</option>
+                            {GRADES.map((grade) => (
+                                <option key={grade} value={grade}>{grade}</option>
+                            ))}
+                        </select>
+                        <p className="text-sm text-slate-500 dark:text-slate-400">
+                            This helps us match you with the right tutors.
+                        </p>
+                    </div>
+
+                    <Button
+                        onClick={handleSave}
+                        disabled={saving}
+                        className="bg-violet-600 hover:bg-violet-700 text-white"
+                    >
+                        {saving ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Saving...
+                            </>
+                        ) : (
+                            <>
+                                <Save className="mr-2 h-4 w-4" />
+                                Save Preferences
+                            </>
+                        )}
+                    </Button>
+                </CardContent>
+            </Card>
+        </motion.div>
     );
 }

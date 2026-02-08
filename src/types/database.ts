@@ -33,6 +33,7 @@ export interface StudentProfile {
     user_id: string;
     interests: string[];
     languages: string[];
+    grade_level?: string; // e.g. "10th Grade"
     created_at: string;
     updated_at?: string;
 }
@@ -47,6 +48,7 @@ export interface TeacherProfile {
     photo_url?: string;
     subjects: string[];
     languages: string[];
+    target_grades?: string[]; // e.g. ["10th Grade", "11th Grade"]
     hourly_rate: number;
     group_rate?: number | null;
     timezone: string;

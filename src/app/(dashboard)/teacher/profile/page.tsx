@@ -16,6 +16,7 @@ interface TeacherProfileData {
     website: string;
     subjects: string[];
     languages: string[];
+    target_grades?: string[];
     hourly_rate: number;
     group_rate: number | null;
     timezone: string;
@@ -25,6 +26,7 @@ interface TeacherProfileData {
 interface TeacherFormData extends TeacherProfileData {
     full_name: string;
     email: string;
+    target_grades: string[];
 }
 
 interface Stats {
@@ -32,6 +34,17 @@ interface Stats {
     total_lessons: number;
     average_rating: number;
 }
+
+const GRADES = [
+    "Elementary School",
+    "Middle School (6-8)",
+    "High School - Freshman (9th)",
+    "High School - Sophomore (10th)",
+    "High School - Junior (11th)",
+    "High School - Senior (12th)",
+    "University / College",
+    "Adult Learner",
+];
 
 const timezones = [
     "UTC",
@@ -77,6 +90,7 @@ export default function TeacherProfile() {
         website: "",
         subjects: [],
         languages: [],
+        target_grades: [],
         hourly_rate: 0,
         group_rate: null,
         timezone: "UTC",
@@ -125,6 +139,7 @@ export default function TeacherProfile() {
                         website: teacherProfile.website || "",
                         subjects: teacherProfile.subjects || [],
                         languages: teacherProfile.languages || [],
+                        target_grades: teacherProfile.target_grades || [],
                         hourly_rate: teacherProfile.hourly_rate || 0,
                         group_rate: teacherProfile.group_rate || null,
                         timezone: teacherProfile.timezone || "UTC",
@@ -220,6 +235,7 @@ export default function TeacherProfile() {
                 website: formData.website,
                 subjects: formData.subjects,
                 languages: formData.languages,
+                target_grades: formData.target_grades,
                 hourly_rate: formData.hourly_rate,
                 group_rate: formData.group_rate,
                 timezone: formData.timezone,
@@ -815,6 +831,61 @@ export default function TeacherProfile() {
                                 )}
                                 {formData.languages.length === 0 && !isEditing && (
                                     <p className="text-slate-500 text-sm">No languages added yet</p>
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        {/* Target Grades */}
+                        <Card className="bg-white border-slate-200 dark:bg-slate-900 dark:border-slate-800">
+                            <CardHeader>
+                                <CardTitle className="text-slate-900 dark:text-white">Target Grades</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex flex-wrap gap-2">
+                                    {formData.target_grades?.map((grade) => (
+                                        <Badge
+                                            key={grade}
+                                            variant="secondary"
+                                            className="bg-blue-100 text-blue-700 border-blue-200 px-3 py-1 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/20"
+                                        >
+                                            {grade}
+                                            {isEditing && (
+                                                <button onClick={() => {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        target_grades: prev.target_grades?.filter(g => g !== grade) || []
+                                                    }));
+                                                }} className="ml-2">
+                                                    <X className="h-3 w-3" />
+                                                </button>
+                                            )}
+                                        </Badge>
+                                    ))}
+                                </div>
+                                {isEditing && (
+                                    <div className="mt-4">
+                                        <select
+                                            value=""
+                                            onChange={(e) => {
+                                                const grade = e.target.value;
+                                                if (grade && !formData.target_grades?.includes(grade)) {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        target_grades: [...(prev.target_grades || []), grade]
+                                                    }));
+                                                }
+                                            }}
+                                            className="w-full p-2 rounded-lg bg-white border border-slate-300 text-slate-900 text-sm dark:bg-slate-800 dark:border-slate-700 dark:text-white"
+                                        >
+                                            <option value="">Add a grade level...</option>
+                                            {GRADES.filter(g => !formData.target_grades?.includes(g)).map(grade => (
+                                                <option key={grade} value={grade}>{grade}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                                {(!formData.target_grades || formData.target_grades.length === 0) && !isEditing && (
+                                    <p className="text-slate-500 text-sm">No target grades added yet</p>
                                 )}
                             </CardContent>
                         </Card>

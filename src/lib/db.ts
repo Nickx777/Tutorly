@@ -3,6 +3,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import type {
     TeacherProfile,
     StudentProfile,
+    TeacherPackage,
     Availability,
     Review,
     TeacherStats,
@@ -107,10 +108,55 @@ export async function updateTeacherProfile(
     if (error) throw error;
 }
 
+export async function getTeacherPackages(teacherId: string) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+        .from("teacher_packages")
+        .select("*")
+        .eq("teacher_id", teacherId)
+        .order("price", { ascending: true });
+
+    if (error) throw error;
+    return data;
+}
+
+export async function updateTeacherPackages(
+    teacherId: string,
+    packages: TeacherPackage[]
+) {
+    const supabase = createClient();
+
+    // 1. Delete existing packages for this teacher (simple replacement strategy)
+    const { error: deleteError } = await supabase
+        .from("teacher_packages")
+        .delete()
+        .eq("teacher_id", teacherId);
+
+    if (deleteError) throw deleteError;
+
+    // 2. Insert new packages
+    if (packages.length > 0) {
+        const { error: insertError } = await supabase
+            .from("teacher_packages")
+            .insert(
+                packages.map(pkg => ({
+                    teacher_id: teacherId,
+                    name: pkg.name,
+                    lesson_count: pkg.lesson_count,
+                    price: pkg.price,
+                    description: pkg.description
+                }))
+            );
+
+        if (insertError) throw insertError;
+    }
+}
+
 // =====================================================
 // Student Profile Functions
 // =====================================================
 
+// Student Profile Update
 export async function upsertStudentProfile(
     userId: string,
     data: Partial<StudentProfile>
@@ -121,6 +167,7 @@ export async function upsertStudentProfile(
         user_id: userId,
         interests: data.interests || [],
         languages: data.languages || [],
+        grade_level: data.grade_level || null,
         updated_at: new Date().toISOString(),
     }, {
         onConflict: 'user_id'
@@ -129,52 +176,19 @@ export async function upsertStudentProfile(
     if (error) throw error;
 }
 
-// =====================================================
-// Custom Package Functions
-// =====================================================
-
-export async function getTeacherPackages(teacherId: string) {
+export async function getStudentProfile(userId: string) {
     const supabase = createClient();
-
     const { data, error } = await supabase
-        .from("teacher_packages")
+        .from("student_profiles")
         .select("*")
-        .eq("teacher_id", teacherId)
-        .order("lesson_count", { ascending: true });
+        .eq("user_id", userId)
+        .single();
 
-    if (error) throw error;
+    if (error && error.code !== "PGRST116") throw error;
     return data;
 }
 
-export async function updateTeacherPackages(
-    teacherProfileId: string,
-    packages: any[]
-) {
-    const supabase = createClient();
-
-    // Delete existing packages
-    const { error: deleteError } = await supabase
-        .from("teacher_packages")
-        .delete()
-        .eq("teacher_id", teacherProfileId);
-
-    if (deleteError) throw deleteError;
-
-    // Insert new packages
-    if (packages.length > 0) {
-        const { error: insertError } = await supabase.from("teacher_packages").insert(
-            packages.map((pkg) => ({
-                teacher_id: teacherProfileId,
-                name: pkg.name,
-                lesson_count: pkg.lesson_count,
-                price: pkg.price,
-                description: pkg.description,
-            }))
-        );
-
-        if (insertError) throw insertError;
-    }
-}
+// ... existing code ...
 
 export async function createTeacherProfile(
     userId: string,
@@ -189,6 +203,7 @@ export async function createTeacherProfile(
             bio: data.bio || "",
             subjects: data.subjects || [],
             languages: data.languages || [],
+            target_grades: data.target_grades || [],
             hourly_rate: data.hourly_rate || 0,
             ...data,
             updated_at: new Date().toISOString(),
@@ -959,10 +974,10 @@ export async function browseTeachers(filters?: {
 export async function getRecommendedTeachers(studentId: string, supabaseClient?: SupabaseClient) {
     const supabase = supabaseClient || createClient();
 
-    // 1. Get student profile interests and languages
+    // 1. Get student profile interests, languages, and grade_level
     const { data: profile } = await supabase
         .from("student_profiles")
-        .select("interests, languages")
+        .select("interests, languages, grade_level")
         .eq("user_id", studentId)
         .single();
 
@@ -988,6 +1003,7 @@ export async function getRecommendedTeachers(studentId: string, supabaseClient?:
 
     const studentInterests = profile.interests || [];
     const studentLanguages = profile.languages || [];
+    const studentGradeLevel = profile.grade_level;
 
     // Calculate match score
     const teachersWithScores = await Promise.all((teachers || []).map(async (teacher: any) => {
@@ -1002,6 +1018,12 @@ export async function getRecommendedTeachers(studentId: string, supabaseClient?:
         const teacherLanguages = teacher.languages || [];
         const commonLanguages = teacherLanguages.filter((l: string) => studentLanguages.includes(l));
         score += commonLanguages.length * 3;
+
+        // Grade match (+5 if grade level matches)
+        const teacherGrades = teacher.target_grades || [];
+        if (studentGradeLevel && teacherGrades.includes(studentGradeLevel)) {
+            score += 5;
+        }
 
         const ratingStats = await getTeacherRatingStats(teacher.user_id);
 
