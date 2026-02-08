@@ -116,8 +116,8 @@ export async function GET(request: NextRequest) {
             let redirectPath = next;
             // If next is default '/', redirect based on onboarding status and role
             if (next === '/' || next === '/auth/callback') {
-                // Check if user needs onboarding
-                const needsOnboarding = !existingUser || existingUser.onboarding_completed === false;
+                // Only force onboarding for brand new accounts
+                const needsOnboarding = !existingUser;
 
                 if (needsOnboarding) {
                     redirectPath = '/onboarding';

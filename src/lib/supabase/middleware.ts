@@ -104,15 +104,6 @@ export async function updateSession(request: NextRequest) {
         const onboardingCompleted = userData?.onboarding_completed;
         const path = request.nextUrl.pathname;
 
-        // Force Onboarding Flow
-        // If not completed, and not already on an onboarding page, and not an API route (to preserve functionality)
-        if (!onboardingCompleted && !path.startsWith('/onboarding') && !path.startsWith('/api')) {
-            const target = role === 'teacher' ? '/onboarding/teacher' : '/onboarding/student';
-            const url = request.nextUrl.clone();
-            url.pathname = target;
-            return NextResponse.redirect(url);
-        }
-
         // Role-based access control
         const isTeacherDashboard = path === '/teacher' || path.startsWith('/teacher/');
         const isStudentDashboard = path === '/student' || path.startsWith('/student/');

@@ -16,13 +16,11 @@ import { Loader2, ArrowRight, CheckCircle2, Circle } from "lucide-react";
 // After profile setup, show the interactive tutorial
 
 const GRADES = [
-    "Elementary School",
-    "Middle School (6-8)",
-    "High School - Freshman (9th)",
-    "High School - Sophomore (10th)",
-    "High School - Junior (11th)",
-    "High School - Senior (12th)",
-    "University / College",
+    "Primary School (Ages 5-11)",
+    "Lower Secondary School (Years 7-9)",
+    "Upper Secondary School (Years 10-11)",
+    "Sixth Form / College (Years 12-13)",
+    "University / Higher Education",
     "Adult Learner",
 ];
 
