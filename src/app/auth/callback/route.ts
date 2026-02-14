@@ -92,16 +92,25 @@ export async function GET(request: NextRequest) {
                         approved: false
                     }, { onConflict: 'user_id' });
                 }
-            } else if (refreshToken || roleParam) {
-                console.log("Updating existing user...");
-                // Existing User: Update tokens and potentially role if explicitly provided
+            } else {
+                console.log("Existing user found, role:", existingUser.role, "roleParam:", roleParam);
                 const updates: any = {};
                 if (refreshToken) updates.google_refresh_token = refreshToken;
 
-                // Only update role if it's currently missing or explicitly changed by an admin/onboarding flow
-                // For integration connections (like calendar), we shouldn't overwrite a set role with a default
-                if (roleParam && !existingUser.role) {
+                // If roleParam is explicitly provided AND the user hasn't completed onboarding yet,
+                // this is a new registration where the DB trigger set the wrong default role.
+                // Always apply the role from the register page in this case.
+                if (roleParam && !existingUser.onboarding_completed) {
                     updates.role = roleParam;
+                    targetRole = roleParam;
+
+                    // If switching to teacher, ensure teacher profile exists
+                    if (roleParam === 'teacher') {
+                        await supabaseAdmin.from('teacher_profiles').upsert({
+                            user_id: user.id,
+                            approved: false
+                        }, { onConflict: 'user_id' });
+                    }
                 }
 
                 if (Object.keys(updates).length > 0) {
@@ -109,6 +118,13 @@ export async function GET(request: NextRequest) {
                         .from('users')
                         .update(updates)
                         .eq('id', user.id);
+
+                    // Also update auth metadata so the onboarding page picks up the role
+                    if (updates.role) {
+                        await supabaseAdmin.auth.admin.updateUserById(user.id, {
+                            user_metadata: { ...user.user_metadata, role: updates.role }
+                        });
+                    }
                 }
             }
 
