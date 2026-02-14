@@ -180,10 +180,10 @@ export default function AdminUsersPage() {
             setUsers(prev =>
                 prev.map(u => {
                     if (u.id === userId && u.teacher_profile) {
-                        return {
-                            ...u,
-                            teacher_profile: u.teacher_profile.map(tp => ({ ...tp, approved: true }))
-                        };
+                        const updatedProfile = Array.isArray(u.teacher_profile)
+                            ? u.teacher_profile.map(tp => ({ ...tp, approved: true }))
+                            : { ...(u.teacher_profile as any), approved: true };
+                        return { ...u, teacher_profile: updatedProfile as any };
                     }
                     return u;
                 })
@@ -295,7 +295,9 @@ export default function AdminUsersPage() {
                                     </thead>
                                     <tbody>
                                         {filteredUsers.map((user) => {
-                                            const teacherProfile = user.teacher_profile?.[0];
+                                            const teacherProfile = Array.isArray(user.teacher_profile)
+                                                ? user.teacher_profile[0]
+                                                : user.teacher_profile;
                                             const isApproved = teacherProfile?.approved;
                                             const isTeacher = user.role === "teacher";
                                             const hasProfile = !!teacherProfile;
