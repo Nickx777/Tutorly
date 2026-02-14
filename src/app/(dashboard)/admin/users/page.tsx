@@ -38,7 +38,7 @@ import {
 } from "@/components/ui";
 import { DashboardLayout } from "@/components/dashboard";
 import { createClient } from "@/lib/supabase/client";
-import { getAllUsers, updateUserStatus, approveTeacher } from "@/lib/db";
+import { updateUserStatus } from "@/lib/db";
 
 interface UserItem {
     id: string;
@@ -85,7 +85,9 @@ export default function AdminUsersPage() {
             }
 
             try {
-                const usersData = await getAllUsers();
+                const res = await fetch("/api/admin/users");
+                if (!res.ok) throw new Error("Failed to fetch users");
+                const usersData = await res.json();
                 setUsers(usersData as UserItem[]);
             } catch (err) {
                 console.error("Error fetching users:", err);
@@ -152,7 +154,15 @@ export default function AdminUsersPage() {
     const handleApproveTeacher = async (userId: string) => {
         setActionLoading(userId);
         try {
-            await approveTeacher(userId);
+            const res = await fetch("/api/admin/approve-teacher", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ userId }),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || "Failed to approve teacher");
+            }
             setUsers(prev =>
                 prev.map(u => {
                     if (u.id === userId && u.teacher_profile) {
