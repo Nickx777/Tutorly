@@ -97,10 +97,13 @@ export async function updateTeacherProfile(
 ) {
     const supabase = createClient();
 
+    // Strip approval fields - only admins can change approval status via approveTeacher()
+    const { approved, show_approval_notification, ...safeData } = data as any;
+
     const { error } = await supabase
         .from("teacher_profiles")
         .update({
-            ...data,
+            ...safeData,
             updated_at: new Date().toISOString(),
         })
         .eq("user_id", userId);
@@ -196,16 +199,20 @@ export async function createTeacherProfile(
 ) {
     const supabase = createClient();
 
+    // Strip approval fields - new teachers must be approved by admin
+    const { approved, show_approval_notification, ...safeData } = data as any;
+
     const { data: profile, error } = await supabase
         .from("teacher_profiles")
         .upsert({
             user_id: userId,
-            bio: data.bio || "",
-            subjects: data.subjects || [],
-            languages: data.languages || [],
-            target_grades: data.target_grades || [],
-            hourly_rate: data.hourly_rate || 0,
-            ...data,
+            bio: safeData.bio || "",
+            subjects: safeData.subjects || [],
+            languages: safeData.languages || [],
+            target_grades: safeData.target_grades || [],
+            hourly_rate: safeData.hourly_rate || 0,
+            ...safeData,
+            approved: false, // Always false on create - requires admin approval
             updated_at: new Date().toISOString(),
         }, {
             onConflict: 'user_id'

@@ -152,12 +152,17 @@ function RegisterForm() {
     };
 
     const handleGoogleLogin = async () => {
+        if (!selectedRole) {
+            setError("Please select whether you want to Learn or Teach before continuing with Google.");
+            return;
+        }
+
         try {
             const supabase = createClient();
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: "google",
                 options: {
-                    redirectTo: `${location.origin}/auth/callback?role=${selectedRole || 'student'}`,
+                    redirectTo: `${location.origin}/auth/callback?role=${selectedRole}`,
                     queryParams: {
                         access_type: "offline",
                         prompt: "consent",
