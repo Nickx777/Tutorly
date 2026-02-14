@@ -86,11 +86,25 @@ export default function AdminUsersPage() {
 
             try {
                 const res = await fetch("/api/admin/users");
-                if (!res.ok) throw new Error("Failed to fetch users");
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    console.error("Admin API error:", res.status, errData);
+                    toast.error(`API error: ${errData.error || res.statusText}`);
+                    throw new Error("API failed");
+                }
                 const usersData = await res.json();
+
+                // Debug: log teacher data
+                const teachers = usersData.filter((u: any) => u.role === 'teacher');
+                console.log("Teachers found:", teachers.length);
+                teachers.forEach((t: any) => {
+                    console.log(`Teacher ${t.email}: suspended=${t.suspended}, teacher_profile=`, t.teacher_profile);
+                });
+
                 setUsers(usersData as UserItem[]);
             } catch (err) {
                 console.error("Error fetching users:", err);
+                toast.error("Failed to load users - check console for details");
             } finally {
                 setLoading(false);
             }
