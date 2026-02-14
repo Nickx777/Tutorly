@@ -319,7 +319,15 @@ export default function AdminUsersPage() {
                                                         </Badge>
                                                     </td>
                                                     <td className="p-4">
-                                                        {user.suspended ? (
+                                                        {isPendingApproval ? (
+                                                            <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
+                                                                Pending Approval
+                                                            </Badge>
+                                                        ) : isMissingProfile ? (
+                                                            <Badge variant="secondary" className="bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+                                                                No Profile
+                                                            </Badge>
+                                                        ) : user.suspended === true ? (
                                                             <div className="flex flex-col gap-1">
                                                                 <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-300 w-fit">
                                                                     Suspended
@@ -330,14 +338,6 @@ export default function AdminUsersPage() {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                        ) : isPendingApproval ? (
-                                                            <Badge variant="secondary" className="bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
-                                                                Pending Approval
-                                                            </Badge>
-                                                        ) : isMissingProfile ? (
-                                                            <Badge variant="secondary" className="bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400">
-                                                                No Profile
-                                                            </Badge>
                                                         ) : (
                                                             <Badge variant="secondary" className="bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                                                                 Active
@@ -370,7 +370,7 @@ export default function AdminUsersPage() {
                                                                 size="sm"
                                                                 variant="outline"
                                                                 className={
-                                                                    user.suspended
+                                                                    user.suspended === true
                                                                         ? "border-emerald-300 text-emerald-600 hover:bg-emerald-50"
                                                                         : "border-red-300 text-red-600 hover:bg-red-50"
                                                                 }
@@ -381,7 +381,7 @@ export default function AdminUsersPage() {
                                                                     <Loader2 className="h-4 w-4 animate-spin" />
                                                                 ) : user.id === adminUser?.id ? (
                                                                     <span className="text-slate-500 cursor-not-allowed">This is you</span>
-                                                                ) : user.suspended ? (
+                                                                ) : user.suspended === true ? (
                                                                     <>
                                                                         <CheckCircle className="h-4 w-4 mr-1" />
                                                                         Unsuspend

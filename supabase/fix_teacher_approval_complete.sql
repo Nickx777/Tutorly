@@ -56,11 +56,15 @@ WITH CHECK (
   )
 );
 
--- 7. Force schema cache reload
+-- 7. Fix suspended column: ensure it defaults to false and fix NULL values
+ALTER TABLE public.users ALTER COLUMN suspended SET DEFAULT false;
+UPDATE public.users SET suspended = false WHERE suspended IS NULL;
+
+-- 8. Force schema cache reload
 NOTIFY pgrst, 'reload config';
 
--- 8. Verify: Show current state of all teacher profiles
-SELECT u.email, u.role, tp.approved, tp.user_id
+-- 9. Verify: Show current state of all teacher profiles
+SELECT u.email, u.role, u.suspended, tp.approved, tp.user_id
 FROM public.users u
 LEFT JOIN public.teacher_profiles tp ON tp.user_id = u.id
 WHERE u.role = 'teacher';
